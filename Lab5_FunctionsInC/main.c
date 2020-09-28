@@ -45,7 +45,12 @@ int main (void) {
 unsigned long Calc_Area(unsigned long l, unsigned long w) {
   unsigned long result;
 
-// Put your Lab 5 code here
+	if(l < 3 || l > 20)
+		return 0;
+	if(w < 3 || w > 20)
+		return 0;
+	
+	result = l * w;
   
   return(result);
 }
