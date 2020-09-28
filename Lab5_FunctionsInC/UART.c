@@ -1,17 +1,17 @@
 // UART.c
-// Runs on LM3S811, LM3S1968, LM3S8962, LM4F120
+// Runs on LM4F120/TM4C123
 // Simple device driver for the UART.
 // Daniel Valvano
 // June 17, 2013
 
 /* This example accompanies the books
   "Embedded Systems: Introduction to ARM Cortex M Microcontrollers",
-  ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2013
+  ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2014
 
 "Embedded Systems: Real Time Interfacing to ARM Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2013
+   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2014
  
- Copyright 2013 by Jonathan W. Valvano, valvano@mail.utexas.edu
+ Copyright 2015 by Jonathan W. Valvano, valvano@mail.utexas.edu
     You may use, edit, run or distribute this file
     as long as the above copyright notice remains
  THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
@@ -51,7 +51,7 @@
 
 //------------UART_Init------------
 // Wait for new serial port input
-// Initialize the UART for 115,200 baud rate (assuming 16 MHz UART clock),
+// Initialize the UART for 115,200 baud rate (assuming 80 MHz UART clock),
 // 8 bit word length, no parity bits, one stop bit, FIFOs enabled
 // Input: none
 // Output: none
@@ -59,8 +59,8 @@ void UART_Init(void){
   SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0; // activate UART0
   SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOA; // activate port A
   UART0_CTL_R &= ~UART_CTL_UARTEN;      // disable UART
-  UART0_IBRD_R = 8;                    // IBRD = int(16,000,000 / (16 * 115,200)) = int(8.68)
-  UART0_FBRD_R = 43;                     // FBRD = round(0.68 * 64 ) = 43
+  UART0_IBRD_R = 43;                    // IBRD = int(80,000,000 / (16 * 115200)) = int(43.402778)
+  UART0_FBRD_R = 26;                    // FBRD = round(0.402778 * 64) = 26
                                         // 8 bit word length (no parity bits, one stop bit, FIFOs)
   UART0_LCRH_R = (UART_LCRH_WLEN_8|UART_LCRH_FEN);
   UART0_CTL_R |= UART_CTL_UARTEN;       // enable UART
@@ -90,7 +90,7 @@ void UART_OutChar(unsigned char data){
 
 
 
-// Print a character to OLED.
+// Print a character to UART0.
 int fputc(int ch, FILE *f){
   if((ch == 10) || (ch == 13) || (ch == 27)){
     UART_OutChar(13);
@@ -100,8 +100,8 @@ int fputc(int ch, FILE *f){
   UART_OutChar(ch);
   return 1;
 }
-// No input from UART, always return data.
-int fgetc (FILE *f){
+// input from UART, return data.
+int fgetc(FILE *f){
 	char ch;
 	ch = UART_InChar();
 	UART_OutChar(ch);

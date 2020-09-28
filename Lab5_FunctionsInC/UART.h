@@ -1,17 +1,17 @@
 // UART.h
-// Runs on LM3S811, LM3S1968, LM3S8962, LM4F120
+// Runs on LM4F120/TM4C123
 // Simple device driver for the UART.
 // Daniel Valvano
 // June 17, 2013
 
 /* This example accompanies the books
   "Embedded Systems: Introduction to ARM Cortex M Microcontrollers",
-  ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2013
+  ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2014
 
 "Embedded Systems: Real Time Interfacing to ARM Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2013
+   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2014
  
- Copyright 2013 by Jonathan W. Valvano, valvano@mail.utexas.edu
+ Copyright 2015 by Jonathan W. Valvano, valvano@mail.utexas.edu
     You may use, edit, run or distribute this file
     as long as the above copyright notice remains
  THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
@@ -36,7 +36,7 @@
 
 //------------UART_InChar------------
 // Wait for new serial port input
-// Initialize the UART for 115,200 baud rate (assuming 16 MHz clock),
+// Initialize the UART for 115,200 baud rate (assuming 80 MHz clock),
 // 8 bit word length, no parity bits, one stop bit, FIFOs enabled
 // Input: none
 // Output: none
