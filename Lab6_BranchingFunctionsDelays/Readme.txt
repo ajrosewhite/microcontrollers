@@ -1,0 +1,1 @@
+The purpose of this lab is to learn simple programming structures in C. You will also learn how to estimate how long it takes to run software, and use this estimation to create a time delay function. You learn how to use the oscilloscope to measure time delay. Software skills you will learn include masking, toggling, if-then, subroutines, and looping.
