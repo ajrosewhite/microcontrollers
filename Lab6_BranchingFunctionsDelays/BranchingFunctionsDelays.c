@@ -20,21 +20,71 @@
 #define GPIO_PORTF_AFSEL_R      (*((volatile unsigned long *)0x40025420))
 #define GPIO_PORTF_PUR_R        (*((volatile unsigned long *)0x40025510))
 #define GPIO_PORTF_DEN_R        (*((volatile unsigned long *)0x4002551C))
+#define GPIO_PORTF_LOCK_R       (*((volatile unsigned long *)0x40025520))
+#define GPIO_PORTF_CR_R         (*((volatile unsigned long *)0x40025524))
 #define GPIO_PORTF_AMSEL_R      (*((volatile unsigned long *)0x40025528))
 #define GPIO_PORTF_PCTL_R       (*((volatile unsigned long *)0x4002552C))
 #define SYSCTL_RCGC2_R          (*((volatile unsigned long *)0x400FE108))
 #define SYSCTL_RCGC2_GPIOF      0x00000020  // port F Clock Gating Control
 
+#define DELAY_100MS 1333333
+
 // basic functions defined at end of startup.s
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
 
-int main(void){ unsigned long volatile delay;
+// Prototypes
+void PortF_Init(void);
+void Delay100ms(void);
+
+int main(void)
+{
+	unsigned long sw1;
+	unsigned long volatile delay;
   TExaS_Init(SW_PIN_PF4, LED_PIN_PF2);  // activate grader and set system clock to 80 MHz
   // initialization goes here
-
+	PortF_Init();
   EnableInterrupts();           // enable interrupts for the grader
-  while(1){
+	
+	// LED has to start blue
+	GPIO_PORTF_DATA_R = GPIO_PORTF_DATA_R | 0x04;
+  while(1)
+	{
     // body goes here
+		Delay100ms();
+		
+		sw1 = GPIO_PORTF_DATA_R & 0x10;
+		if(sw1 == 0)
+			GPIO_PORTF_DATA_R = GPIO_PORTF_DATA_R ^ 0x04;
+		else
+			GPIO_PORTF_DATA_R = GPIO_PORTF_DATA_R | 0x04;
   }
+}
+
+// Subroutine to initialize port F pins for input and output
+// PF4 and PF0 are input SW1 and SW2 respectively
+// PF3,PF2,PF1 are outputs to the LED
+// Inputs: None
+// Outputs: None
+// Notes: These five pins are connected to hardware on the LaunchPad
+void PortF_Init(void)
+{ 
+	volatile unsigned long delay;
+  SYSCTL_RCGC2_R |= 0x00000020;     // 1) F clock
+  delay = SYSCTL_RCGC2_R;           // delay   
+  GPIO_PORTF_LOCK_R = 0x4C4F434B;   // 2) unlock PortF PF0  
+  GPIO_PORTF_CR_R = 0x1F;           // allow changes to PF4-0       
+  GPIO_PORTF_AMSEL_R = 0x00;        // 3) disable analog function
+  GPIO_PORTF_PCTL_R = 0x00000000;   // 4) GPIO clear bit PCTL  
+  GPIO_PORTF_DIR_R = 0x0E;          // 5) PF4,PF0 input, PF3,PF2,PF1 output   
+  GPIO_PORTF_AFSEL_R = 0x00;        // 6) no alternate function
+  GPIO_PORTF_PUR_R = 0x11;          // enable pullup resistors on PF4,PF0       
+  GPIO_PORTF_DEN_R = 0x1F;          // 7) enable digital pins PF4-PF0        
+}
+
+void Delay100ms(void)
+{
+  unsigned long i = DELAY_100MS;
+	while(i > 0)
+		i--;
 }
