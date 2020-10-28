@@ -65,33 +65,46 @@ void SysTick_Init(void){
 }
 unsigned long Led;
 void Delay(void){unsigned long volatile time;
-  time = 160000; // 0.1sec
+  time = 80000; // 0.05sec
   while(time){
    time--;
   }
 }
-// first data point is wrong, the other 49 will be correct
-unsigned long Time[50];
 // you must leave the Data array defined exactly as it is
 unsigned long Data[50];
-int main(void){  unsigned long i,last,now;
+int main(void)
+	{ 
+	unsigned long i;
   TExaS_Init(SW_PIN_PF40, LED_PIN_PF1);  // activate grader and set system clock to 16 MHz
   PortF_Init();   // initialize PF1 to output
   SysTick_Init(); // initialize SysTick, runs at 16 MHz
   i = 0;          // array index
-  last = NVIC_ST_CURRENT_R;
   EnableInterrupts();           // enable interrupts for the grader
-  while(1){
-    Led = GPIO_PORTF_DATA_R;   // read previous
-    Led = Led^0x02;            // toggle red LED
-    GPIO_PORTF_DATA_R = Led;   // output 
-    if(i<50){
-      now = NVIC_ST_CURRENT_R;
-      Time[i] = (last-now)&0x00FFFFFF;  // 24-bit time difference
-      Data[i] = GPIO_PORTF_DATA_R&0x02; // record PF1
-      last = now;
-      i++;
-    }
+  while(1)
+	{
+		if((GPIO_PORTF_DATA_R&0x01) == 0 || (GPIO_PORTF_DATA_R&0x10) == 0)
+		{
+			if(i < 50)
+				Data[i] = GPIO_PORTF_DATA_R&0x13; // record PF4,PF1,PF0
+			i++;
+			Led = GPIO_PORTF_DATA_R;   // read previous
+			Led = Led^0x02;            // toggle red LED
+			GPIO_PORTF_DATA_R = Led;   // output 
+		}
+		else
+		{
+			int result = 0;
+			if(GPIO_PORTF_DATA_R != (GPIO_PORTF_DATA_R&~0x02))
+				result = 1;
+			GPIO_PORTF_DATA_R = GPIO_PORTF_DATA_R&~0x02;
+			if(result == 1)
+			{
+				if(i < 50)
+					Data[i] = GPIO_PORTF_DATA_R&0x13; // record PF4,PF1,PF0
+				i++;
+			}
+		}
+		
     Delay();
   }
 }
