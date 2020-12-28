@@ -116,3 +116,5 @@ void UART_ConvertDistance(unsigned long n);
 // Output: none
 // Fixed format 1 digit, point, 3 digits, space, units, null termination
 void UART_OutDistance(unsigned long n);
+
+void ClearString(void);

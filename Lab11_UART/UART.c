@@ -123,7 +123,14 @@ char character;
 // Output: none
 void UART_OutString(unsigned char buffer[]){
 // as part of Lab 11 implement this function
-
+	unsigned int counter = 0;
+	while(buffer[counter] != '\0')
+	{
+		while((UART0_FR_R&UART_FR_TXFF) != 0);  // wait for the UART to not be full
+		UART0_DR_R = buffer[counter];
+		
+		counter++;
+	}
 }
 
 unsigned char String[10];
@@ -140,7 +147,57 @@ unsigned char String[10];
 //10000 to "**** "  any value larger than 9999 converted to "**** "
 void UART_ConvertUDec(unsigned long n){
 // as part of Lab 11 implement this function
-  
+	
+	char whitespace = 1;
+	
+	ClearString();
+	
+	// all stars first
+	if(n > 9999)
+	{
+		String[0] = '*';
+		String[1] = '*';
+		String[2] = '*';
+		String[3] = '*';
+	}
+	else
+	{
+		// 4 digits
+		if(n/1000 > 0)
+			whitespace = 0;
+		if(whitespace == 1)
+			String[0] = ' ';
+		else 
+			String[0] = 0x30+n/1000;
+		
+		n = n%1000;
+		
+		// 3 digits
+		if(n/100 > 0)
+			whitespace = 0;
+		if(whitespace == 1)
+			String[1] = ' ';
+		else 
+			String[1] = 0x30+n/100;
+		
+		n = n%100;
+		
+		// 2 digits
+		if(n/10 > 0)
+			whitespace = 0;
+		if(whitespace == 1)
+			String[2] = ' ';
+		else 
+			String[2] = 0x30+n/10;
+		
+		n = n%10;
+		
+		// 1 digit
+		String[3] = 0x30+n;
+	}
+	
+	String[4] = ' ';
+	String[5] = '\0';
 }
 
 //-----------------------UART_OutUDec-----------------------
@@ -166,7 +223,37 @@ void UART_OutUDec(unsigned long n){
 //10000 to "*.*** cm"  any value larger than 9999 converted to "*.*** cm"
 void UART_ConvertDistance(unsigned long n){
 // as part of Lab 11 implement this function
+	
+	ClearString();
   
+	if(n > 9999)
+	{
+		String[0] = '*';
+		String[1] = '.';
+		String[2] = '*';
+		String[3] = '*';
+		String[4] = '*';
+	}
+	else
+	{
+		String[0] = 0x30+(n/1000);
+		n = n%1000;
+		
+		String[1] = '.';
+		
+		String[2] = 0x30 + (n/100);
+		n = n%100;
+		
+		String[3] = 0x30 + (n/10);
+		n = n%10;
+		
+		String[4] = 0x30 + n;
+	}
+	
+	String[5] = ' ';
+	String[6] = 'c';
+	String[7] = 'm';
+	String[8] = '\0';
 }
 
 //-----------------------UART_OutDistance-----------------------
@@ -177,4 +264,13 @@ void UART_ConvertDistance(unsigned long n){
 void UART_OutDistance(unsigned long n){
   UART_ConvertDistance(n);      // convert using your function
   UART_OutString(String);       // output using your function
+}
+
+void ClearString()
+{
+	int counter = 0;
+	for(; counter < 10; counter++)
+	{
+		String[counter] = '\0';
+	}
 }
